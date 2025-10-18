@@ -23,45 +23,75 @@
   This example code is in the public domain.
 
 */
-#include <SHC_BME280.h>
 #include <SHC_BNO055.h>
+#include <SHC_BME280.h>
 #include <SHC_M9N.h>
 #include <TimeLib.h>
 
 int startup = now();
 int i = 0;
 
-BNO055 bnowo;
-M9N miners;
+BNO055 bnowo; // create bno object pronounced "bean-owo"
+SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
+M9N miners; // create a m9n object pronounced "minors"
 
-enum states {"Launch", "Takeoff"};
+
+int states = 0; // launch state
 
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   Serial1.begin(9600);
+
+  // Start the sensors
   bnowo.init();
+  bmeup.init();
   miners.init();
+
+  // done
   Serial.println("initialization done.");
   
 }
 
 void loop() {
+  // iterate loop by one each time
   i+=0;
-  states = 1;
-  // make a string for assembling the data to log:
+
+  // make a string for assembling the data to log. Needs a loop number and a state.
   Serial1.println(dataString(i, states));
-  
 }
 
-String dataString(int a, enum state) {
+String dataString(int a, int state) {
+  // prefetch calls the current data
   bnowo.prefetchData();
+  bmeup.prefetchData();
   miners.prefetchData();
-  return String("LAKEBURST" + "," + String(now() - startup) + "," + String(now()) + "," + String(a) 
-    + "," + String(state) + "," + String(SHC_BME280::getPressure()) + "," + 
-    String(SHC_BME280::getAltitude()) + "," + String(SHC_BME280::getTemperature()) + "," + 
-    String(SHC_BME280::getHumidity()) + "," + String(bnowo.getAccelerationX()) + "," + String(bnowo.getAccelerationY()) 
-    + "," + String(bnowo.getAcceletationZ()) + "," + String(bnowo.getGyroX()) "," + 
-    String(bnowo.getGyroY()) + "," + String(bnowo.getGyroZ()) + "," + String(miners.getLatitude()) + "," +
-    String(miners.getLongitude()) + "," + String(miners.getAltitude()));
+
+  // return all data as a string
+  return String(String("LAKEBURST") + String(",") + String(now() - startup) + String(",") + String(now()) + String(",") + String(a) 
+    + String(",") + stateGet(state) + String(",") + String(bmeup.getPressure()) + String(",") + 
+    String(bmeup.getAltitude()) + String(",") + String(bmeup.getTemperature()) + String(",") + 
+    String(bmeup.getHumidity()) + String(",") + String(bnowo.getAccelerationX()) + String(",") + String(bnowo.getAccelerationY()) 
+    + String(",") + String(bnowo.getAccelerationZ()) + String(",") + String(bnowo.getGyroX()) + String(",") + 
+    String(bnowo.getGyroY()) + String(",") + String(bnowo.getGyroZ()) + String(",") + String(miners.getLatitude()) + String(",") +
+    String(miners.getLongitude()) + String(",") + String(miners.getAltitude()));
+}
+
+String stateGet(int state) {
+  // check state and return a string
+  if (state == 0) {
+    return "launch";
+  } else if (state == 1) {
+    return "liftoff";
+  } else if (state == 2) {
+    return "stabilization";
+  } else if (state == 3) {
+    return "burst";
+  } else if (state == 4) {
+    return "descent";
+  } else if (state == 5) {
+    return "landed";
+  } else {
+    return "error: bad state!";
+  }
 }
