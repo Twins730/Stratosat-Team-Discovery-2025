@@ -29,6 +29,8 @@
 #define BME_MOSI 11
 #define BME_CS 10
 
+const int chipSelect = 10;
+
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 /* Set the delay between fresh samples */
@@ -43,9 +45,6 @@ Adafruit_BME280 bme; // I2C
 //Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
 
 unsigned long delayTime;
-
-
-const int chipSelect = 10;
 
 void setup() {
     Serial.begin(9600); //9600 if this doesn't work
