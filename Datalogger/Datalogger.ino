@@ -4,10 +4,24 @@
 #include <SHC_M9N.h>
 #include <TimeLib.h>
 
+const int status = 12; // status light pin number
+const int clockwise = 20;
+const int cclockwise = 21; // counter clockwise pin number
+
+// get startup time
 int startup = now();
 int i = 0;
 
-int states = 0; // 0 = launch; 1 = liftoff; 2 = stabilization; 3 = burst; 4 = descent; 5 = landed;
+enum States {
+  LAUNCH,
+  LIFTOFF,
+  STABILIZE,
+  BURST,
+  DESCENT,
+  LANDED
+};
+
+States state = LAUNCH;
 
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
@@ -34,37 +48,40 @@ void loop() {
   i+=0;
 
   // print csv string for assembling the data to log. Needs a loop number and a state.
-  Serial1.println(dataString(i, states));
-  stateSwitcher();
+  Serial1.println(dataString(i));
 
   // now for the actual code based on state.
-  switch (states) {
-    case 0:
+  switch (state) {
+    case LAUNCH:
       // launch code. should just turn on status lights.
+      digitalWrite(status, HIGH);
       break;
-    case 1:
+    case LIFTOFF:
       // liftoff code
       break;
-    case 2:
+    case STABILIZE:
       // stablization code
       stabilize();
       break;
-    case 3:
+    case BURST:
       // burst code
       break;
-    case 4:
+    case DESCENT:
       // descent code
       break;
-    case 5: 
+    case LANDED: 
       // landed code.
       break;
   }
+
+  digitalWrite(status, LOW);
+  stateSwitcher();
 
 }
 
 
 
-String dataString(int a, int state) {
+String dataString(int a) {
   // prefetch calls the current data
   bnowo.prefetchData();
   bmeup.prefetchData();
@@ -76,7 +93,8 @@ String dataString(int a, int state) {
     String(bmeup.getAltitude()) + String(",") + String(bmeup.getTemperature()) + String(",") + 
     String(bmeup.getHumidity()) + String(",") + String(bnowo.getAccelerationX()) + String(",") + String(bnowo.getAccelerationY()) 
     + String(",") + String(bnowo.getAccelerationZ()) + String(",") + String(bnowo.getGyroX()) + String(",") + 
-    String(bnowo.getGyroY()) + String(",") + String(bnowo.getGyroZ()) + String(",") + String(miners.getLatitude()) + String(",") +
+    String(bnowo.getGyroY()) + String(",") + String(bnowo.getGyroZ()) + String(",") + String(bnowo.getOrientationX()) + String(",") + 
+    String(bnowo.getOrientationY()) + String(",") + String(bnowo.getOrientationZ()) + String(",") + String(miners.getLatitude()) + String(",") +
     String(miners.getLongitude()) + String(",") + String(miners.getAltitude()));
 }
 
@@ -91,4 +109,25 @@ void stateSwitcher() {
 
 void stabilize() {
   // this is where the stabilization code goes
+
+  // define constants (slope )
+  float k_p = 1.0;
+  float k_v = 1.0;
+  float deadzone = 15;
+
+  // phase control
+  if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
+    // turn on clockwise and off counter clockwise
+    digitalWrite(clockwise, HIGH);
+    digitalWrite(cclockwise, LOW);
+  } else if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
+    // turn on counter clockwise and off clockwise
+    digitalWrite(cclockwise, HIGH);
+    digitalWrite(clockwise, LOW);
+  } else {
+    // turn off all
+    digitalWrite(clockwise, LOW);
+    digitalWrite(cclockwise, LOW);
+  }
+
 }
