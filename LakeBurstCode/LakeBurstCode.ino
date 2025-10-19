@@ -121,7 +121,7 @@ String dataString(int a) {
       String(bnowo.getOrientationZ()) + "," + 
       
       // Append the 3d coordinates.
-      String(miners.getLatitude()) + ",") +
+      String(miners.getLatitude()) + "," +
       String(miners.getLongitude()) + "," + 
       String(miners.getAltitude()));
 }
