@@ -7,7 +7,7 @@
 const int status = 21; // status light pin number
 const int clockwise = 22; // clockwise pin number
 const int cclockwise = 23; // counter clockwise pin number
-const int led = 21; // LED 
+const int LED = 21; // LED 
 
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
