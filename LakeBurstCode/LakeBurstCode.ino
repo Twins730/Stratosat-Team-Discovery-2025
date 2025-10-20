@@ -11,6 +11,7 @@ const int cclockwise = 21; // counter clockwise pin number
 const int LED = 0; // A NEEDS TO BE CHANGED TO PIN DESIGNAION!!!!! 
 
 int lasttime = millis();
+ 
 
 // get startup time
 int startup = now();
@@ -30,6 +31,10 @@ States state = LAUNCH;
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 M9N miners; // create a m9n object pronounced "minors"
+
+float lastAltitude = 0;
+int velocityTime = 1;
+float velocityEND = 0; 
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -199,4 +204,21 @@ void stabilize() {
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
   }
+}
+
+float velocity() {
+ 
+  if (velocityTime >= 1000) {
+    float DAltitude = bmeup.getAltitude() - lastAltitude;
+    float DTime = millis() - velocityTime;
+    DTime /= 1000;
+
+    lastAltitude = bmeup.getAltitude();
+    velocityTime = millis();
+    velocityEND = (float)DAltitude / DTime;
+
+    //  Return vertical velocity in m/s
+    
+  }
+  return velocityEND; 
 }
