@@ -10,10 +10,10 @@ const int cclockwise = 21; // counter clockwise pin number
 const int led = 4; // LED 
 
 // get startup time
-int startup = now();
+int startup = miners.getSecond();
 int i = 0;
 
-miners.milis();
+
 
 enum States {
   LAUNCH,
@@ -226,21 +226,4 @@ void stabilize() {
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
   }
-}
-
-def phase(int arg) {
-  // define constants (slope )
-  float k_p = 1.0;
-  float k_v = 1.0;
-  float deadzone = 15;
-  if (arg == 0) {
-    if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
-      return true;
-    } else {return false;}
-  }
-  else if (arg == 1) {
-    if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
-      return true;
-    } else {return false;}
-  } else 
 }
