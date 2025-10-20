@@ -8,9 +8,7 @@
 const int status = 12; // status light pin number
 const int clockwise = 20;
 const int cclockwise = 21; // counter clockwise pin number
-const int LED = 12; // A NEEDS TO BE CHANGED TO PIN DESIGNAION!!!!! 
-const int lasttime = SHC_M9N.h;
-
+const int LED = 0; // A NEEDS TO BE CHANGED TO PIN DESIGNAION!!!!! 
 
 int lasttime = millis();
 
@@ -47,7 +45,11 @@ void setup() {
   Serial.println("initialization done.");
   
   // Lights  
-  pinMode(LED,output);
+  pinMode(LED,OUTPUT);
+  pinMode(clockwise,OUTPUT);
+  pinMode(cclockwise,OUTPUT);
+  pinMode(status,OUTPUT);
+
 
 }
 
@@ -84,27 +86,13 @@ void loop() {
       landed();
       break;
   }
-
-void loop(){
-
-  // Start of LED_Blink 
- 
-
-
+  // Start of LED_Blink
   if(millis() - lasttime <= 50){    // Light will be ON for 50 milisec
     digitalWrite(LED,HIGH); 
   }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 950 milisec
     digitalWrite(LED, LOW); 
   }else{
     lasttime = millis(); // Process with code
-  }
-
-
-}
-
-
-
-
   }
 
   digitalWrite(status, LOW);
