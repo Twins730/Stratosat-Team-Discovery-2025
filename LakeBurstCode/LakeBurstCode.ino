@@ -30,17 +30,11 @@ enum States {
 
 States state = LAUNCH;
 
-<<<<<<< HEAD
-BNO055 bnowo; // create bno object pronounced "bean-owo"
-SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
-M9N miners; // create a m9n object pronounced "minors"
 
 float lastAltitude = 0;
 int velocityTime = 1;
 float velocityEND = 0; 
 
-=======
->>>>>>> e3ea5d182c6239568042070ac308c5f6eef63420
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -261,7 +255,6 @@ void stabilize() {
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
   }
-<<<<<<< HEAD
 }
 
 float velocity() {
@@ -280,6 +273,3 @@ float velocity() {
   }
   return velocityEND; 
 }
-=======
-}
->>>>>>> e3ea5d182c6239568042070ac308c5f6eef63420
