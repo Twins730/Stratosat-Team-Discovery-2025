@@ -47,7 +47,7 @@ void loop() {
   // iterate loop by one each time
   i+=0;
 
-  // print csv string for assembling the data to log. Needs a loop number and a state.
+  // print csv string for assembling the data to log. Needs a loop number.
   Serial1.println(dataString(i));
 
   // now for the actual code based on state.

@@ -7,10 +7,13 @@
 const int status = 12; // status light pin number
 const int clockwise = 20;
 const int cclockwise = 21; // counter clockwise pin number
+const int led = 4; // LED 
 
 // get startup time
 int startup = now();
 int i = 0;
+
+miners.milis();
 
 enum States {
   LAUNCH,
@@ -45,7 +48,7 @@ void loop() {
   // iterate loop by one each time
   i+=0;
 
-  // print csv string for assembling the data to log. Needs a loop number and a state.
+  // print csv string for assembling the data to log. Needs a loop number.
   Serial1.println(dataString(i));
 
   // now for the actual code based on state.
@@ -67,7 +70,7 @@ void loop() {
       break;
     case DESCENT:
       // descent code
-      decent();
+      descent();
       break;
     case LANDED: 
       // landed code.
@@ -145,8 +148,8 @@ void burst() {
     
 }
 
-// this is where the decent code goes
-void decent(){
+// this is where the descent code goes
+void descent(){
     
 }
 
@@ -177,4 +180,21 @@ void stabilize() {
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
   }
+}
+
+def phase(int arg) {
+  // define constants (slope )
+  float k_p = 1.0;
+  float k_v = 1.0;
+  float deadzone = 15;
+  if (arg == 0) {
+    if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
+      return true;
+    } else {return false;}
+  }
+  else if (arg == 1) {
+    if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
+      return true;
+    } else {return false;}
+  } else 
 }
