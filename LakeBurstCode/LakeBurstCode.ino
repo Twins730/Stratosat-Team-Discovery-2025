@@ -159,7 +159,15 @@ void landed() {
 }
 
 // Returns 1 if the point is above the channel and negative one if it is below. Otherwise it returns zero
-int phaseControl(float p, int a, int d, int b, float x, float y){
+int phaseControl(){
+    // define constants
+    int a = 100
+    float p = 1.0;
+    float d = 15;
+
+    float x = bnowo.getOrientationX();
+    float y = bnowo.getGyroX();
+
     float upper_bound = 0;
 
     // Calculate the angle of the upper bounds
@@ -207,17 +215,13 @@ int phaseControl(float p, int a, int d, int b, float x, float y){
 
 // this is where the stabilization code goes
 void stabilize() {
-  // define constants (slope )
-  float k_p = 1.0;
-  float k_v = 1.0;
-  float deadzone = 15;
-
+  
   // phase control
-  if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
+  if (phaseControl() == 1) {
     // turn on clockwise and off counter clockwise
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
-  } else if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
+  } else if (phaseControl() == -1) {
     // turn on counter clockwise and off clockwise
     digitalWrite(cclockwise, HIGH);
     digitalWrite(clockwise, LOW);
