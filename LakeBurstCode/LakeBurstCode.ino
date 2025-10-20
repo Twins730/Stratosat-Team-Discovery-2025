@@ -4,16 +4,18 @@
 #include <SHC_M9N.h>
 #include <TimeLib.h>
 
-const int status = 12; // status light pin number
-const int clockwise = 20;
-const int cclockwise = 21; // counter clockwise pin number
-const int led = 4; // LED 
+const int status = 21; // status light pin number
+const int clockwise = 22; // clockwise pin number
+const int cclockwise = 23; // counter clockwise pin number
+const int led = 21; // LED 
+
+BNO055 bnowo; // create bno object pronounced "bean-owo"
+SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
+M9N miners; // create a m9n object pronounced "minors"
 
 // get startup time
 int startup = miners.getSecond();
 int i = 0;
-
-
 
 enum States {
   LAUNCH,
@@ -25,10 +27,6 @@ enum States {
 };
 
 States state = LAUNCH;
-
-BNO055 bnowo; // create bno object pronounced "bean-owo"
-SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
-M9N miners; // create a m9n object pronounced "minors"
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -46,7 +44,7 @@ void setup() {
 
 void loop() {
   // iterate loop by one each time
-  i+=0;
+  i++;
 
   // print csv string for assembling the data to log. Needs a loop number.
   Serial1.println(dataString(i));
@@ -91,41 +89,41 @@ String dataString(int a) {
   miners.prefetchData();
   
   // return all data as a single string
-  return String(String("LAKEBURST") + "," + 
+  return String(String("LAKEBURST") + String(",") + 
       // Append timing
-      String(now() - startup) + "," + 
-      String(now()) + "," + 
+      String(now() - startup) + String(",") + 
+      String(now()) + String(",") + 
       
       // Append "a" variable
-      String(a) + "," + 
+      String(a) + String(String(",")) + 
       
       // Append the current mechine state.
-      String(state) + "," + 
+      String(state) + String(String(",")) + 
       
       // Append "bmeup" statistics
-      String(bmeup.getPressure()) + "," + 
-      String(bmeup.getAltitude()) + "," +
-      String(bmeup.getTemperature()) + "," + 
-      String(bmeup.getHumidity()) + "," + 
+      String(bmeup.getPressure()) + String(",") + 
+      String(bmeup.getAltitude()) + String(",") +
+      String(bmeup.getTemperature()) + String(",") + 
+      String(bmeup.getHumidity()) + String(",") + 
       
       // Append Acceleration.
-      String(bnowo.getAccelerationX()) + "," + 
-      String(bnowo.getAccelerationY()) + "," + 
-      String(bnowo.getAccelerationZ()) + "," + 
+      String(bnowo.getAccelerationX()) + String(",") + 
+      String(bnowo.getAccelerationY()) + String(",") + 
+      String(bnowo.getAccelerationZ()) + String(",") + 
       
       // Append Gyro Axis.
-      String(bnowo.getGyroX()) + "," + 
-      String(bnowo.getGyroY()) + "," + 
-      String(bnowo.getGyroZ()) + "," + 
+      String(bnowo.getGyroX()) + String(",") + 
+      String(bnowo.getGyroY()) + String(",") + 
+      String(bnowo.getGyroZ()) + String(",") + 
       
       // Append the Orientation.
-      String(bnowo.getOrientationX()) + "," + 
-      String(bnowo.getOrientationY()) + "," + 
-      String(bnowo.getOrientationZ()) + "," + 
+      String(bnowo.getOrientationX()) + String(",") + 
+      String(bnowo.getOrientationY()) + String(",") + 
+      String(bnowo.getOrientationZ()) + String(",") + 
       
       // Append the 3d coordinates.
-      String(miners.getLatitude()) + "," +
-      String(miners.getLongitude()) + "," + 
+      String(miners.getLatitude()) + String(",") +
+      String(miners.getLongitude()) + String(",") + 
       String(miners.getAltitude()));
 }
 
@@ -161,7 +159,7 @@ void landed() {
 // Returns 1 if the point is above the channel and negative one if it is below. Otherwise it returns zero
 int phaseControl(){
     // define constants
-    int a = 100
+    int a = 100;
     float p = 1.0;
     float d = 15;
 
