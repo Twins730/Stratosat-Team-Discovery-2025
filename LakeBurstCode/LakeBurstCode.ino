@@ -14,6 +14,7 @@ int lasttime = millis();
 
 // get startup time
 int startup = now();
+int startup = now();
 int i = 0;
 
 enum States {
@@ -26,6 +27,10 @@ enum States {
 };
 
 States state = LAUNCH;
+
+BNO055 bnowo; // create bno object pronounced "bean-owo"
+SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
+M9N miners; // create a m9n object pronounced "minors"
 
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
@@ -56,7 +61,9 @@ void setup() {
 void loop() {
   // iterate loop by one each time
   i+=0;
+  i+=0;
 
+  // print csv string for assembling the data to log. Needs a loop number and a state.
   // print csv string for assembling the data to log. Needs a loop number and a state.
   Serial1.println(dataString(i));
 
@@ -79,6 +86,7 @@ void loop() {
       break;
     case DESCENT:
       // descent code
+      decent();
       decent();
       break;
     case LANDED: 
@@ -109,17 +117,26 @@ String dataString(int a) {
   
   // return all data as a single string
   return String(String("LAKEBURST") + "," + 
+  return String(String("LAKEBURST") + "," + 
       // Append timing
+      String(now() - startup) + "," + 
+      String(now()) + "," + 
       String(now() - startup) + "," + 
       String(now()) + "," + 
       
       // Append "a" variable
       String(a) + "," + 
+      String(a) + "," + 
       
       // Append the current mechine state.
       String(state) + "," + 
+      String(state) + "," + 
       
       // Append "bmeup" statistics
+      String(bmeup.getPressure()) + "," + 
+      String(bmeup.getAltitude()) + "," +
+      String(bmeup.getTemperature()) + "," + 
+      String(bmeup.getHumidity()) + "," + 
       String(bmeup.getPressure()) + "," + 
       String(bmeup.getAltitude()) + "," +
       String(bmeup.getTemperature()) + "," + 
@@ -129,8 +146,14 @@ String dataString(int a) {
       String(bnowo.getAccelerationX()) + "," + 
       String(bnowo.getAccelerationY()) + "," + 
       String(bnowo.getAccelerationZ()) + "," + 
+      String(bnowo.getAccelerationX()) + "," + 
+      String(bnowo.getAccelerationY()) + "," + 
+      String(bnowo.getAccelerationZ()) + "," + 
       
       // Append Gyro Axis.
+      String(bnowo.getGyroX()) + "," + 
+      String(bnowo.getGyroY()) + "," + 
+      String(bnowo.getGyroZ()) + "," + 
       String(bnowo.getGyroX()) + "," + 
       String(bnowo.getGyroY()) + "," + 
       String(bnowo.getGyroZ()) + "," + 
@@ -139,8 +162,13 @@ String dataString(int a) {
       String(bnowo.getOrientationX()) + "," + 
       String(bnowo.getOrientationY()) + "," + 
       String(bnowo.getOrientationZ()) + "," + 
+      String(bnowo.getOrientationX()) + "," + 
+      String(bnowo.getOrientationY()) + "," + 
+      String(bnowo.getOrientationZ()) + "," + 
       
       // Append the 3d coordinates.
+      String(miners.getLatitude()) + "," +
+      String(miners.getLongitude()) + "," + 
       String(miners.getLatitude()) + "," +
       String(miners.getLongitude()) + "," + 
       String(miners.getAltitude()));
@@ -160,6 +188,9 @@ void liftoff(){
   
 
 
+  
+
+
 }
 
 // this is where the burst code goes
@@ -167,6 +198,8 @@ void burst() {
     
 }
 
+// this is where the decent code goes
+void decent(){
 // this is where the decent code goes
 void decent(){
     
@@ -185,11 +218,18 @@ void stabilize() {
   float k_v = 1.0;
   float deadzone = 15;
 
+  // define constants (slope )
+  float k_p = 1.0;
+  float k_v = 1.0;
+  float deadzone = 15;
+
   // phase control
+  if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
   if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
     // turn on clockwise and off counter clockwise
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
+  } else if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
   } else if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
     // turn on counter clockwise and off clockwise
     digitalWrite(cclockwise, HIGH);
@@ -200,3 +240,4 @@ void stabilize() {
     digitalWrite(cclockwise, LOW);
   }
 }
+
