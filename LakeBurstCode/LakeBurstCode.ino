@@ -4,17 +4,19 @@
 #include <SHC_M9N.h>
 #include <TimeLib.h>
 
+const int status = 21; // status light pin number
+const int clockwise = 22; // clockwise pin number
+const int cclockwise = 23; // counter clockwise pin number
+const int LED = 21; // LED 
 
-const int status = 12; // status light pin number
-const int clockwise = 20;
-const int cclockwise = 21; // counter clockwise pin number
-const int LED = 0; // A NEEDS TO BE CHANGED TO PIN DESIGNAION!!!!! 
-
+BNO055 bnowo; // create bno object pronounced "bean-owo"
+SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
+M9N miners; // create a m9n object pronounced "minors"
 int lasttime = millis();
  
 
 // get startup time
-int startup = now();
+int startup = miners.getSecond();
 int i = 0;
 
 enum States {
@@ -28,6 +30,7 @@ enum States {
 
 States state = LAUNCH;
 
+<<<<<<< HEAD
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 M9N miners; // create a m9n object pronounced "minors"
@@ -36,6 +39,8 @@ float lastAltitude = 0;
 int velocityTime = 1;
 float velocityEND = 0; 
 
+=======
+>>>>>>> e3ea5d182c6239568042070ac308c5f6eef63420
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -60,9 +65,9 @@ void setup() {
 
 void loop() {
   // iterate loop by one each time
-  i+=0;
+  i++;
 
-  // print csv string for assembling the data to log. Needs a loop number and a state.
+  // print csv string for assembling the data to log. Needs a loop number.
   Serial1.println(dataString(i));
 
   // now for the actual code based on state.
@@ -84,14 +89,18 @@ void loop() {
       break;
     case DESCENT:
       // descent code
-      decent();
+      descent();
       break;
     case LANDED: 
       // landed code.
       landed();
       break;
   }
-  // Start of LED_Blink
+
+  // Start of LED_Blink 
+ 
+
+
   if(millis() - lasttime <= 50){    // Light will be ON for 50 milisec
     digitalWrite(LED,HIGH); 
   }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 950 milisec
@@ -113,41 +122,41 @@ String dataString(int a) {
   miners.prefetchData();
   
   // return all data as a single string
-  return String(String("LAKEBURST") + "," + 
+  return String(String("LAKEBURST") + String(",") + 
       // Append timing
-      String(now() - startup) + "," + 
-      String(now()) + "," + 
+      String(now() - startup) + String(",") + 
+      String(now()) + String(",") + 
       
       // Append "a" variable
-      String(a) + "," + 
+      String(a) + String(String(",")) + 
       
       // Append the current mechine state.
-      String(state) + "," + 
+      String(state) + String(String(",")) + 
       
       // Append "bmeup" statistics
-      String(bmeup.getPressure()) + "," + 
-      String(bmeup.getAltitude()) + "," +
-      String(bmeup.getTemperature()) + "," + 
-      String(bmeup.getHumidity()) + "," + 
+      String(bmeup.getPressure()) + String(",") + 
+      String(bmeup.getAltitude()) + String(",") +
+      String(bmeup.getTemperature()) + String(",") + 
+      String(bmeup.getHumidity()) + String(",") + 
       
       // Append Acceleration.
-      String(bnowo.getAccelerationX()) + "," + 
-      String(bnowo.getAccelerationY()) + "," + 
-      String(bnowo.getAccelerationZ()) + "," + 
+      String(bnowo.getAccelerationX()) + String(",") + 
+      String(bnowo.getAccelerationY()) + String(",") + 
+      String(bnowo.getAccelerationZ()) + String(",") + 
       
       // Append Gyro Axis.
-      String(bnowo.getGyroX()) + "," + 
-      String(bnowo.getGyroY()) + "," + 
-      String(bnowo.getGyroZ()) + "," + 
+      String(bnowo.getGyroX()) + String(",") + 
+      String(bnowo.getGyroY()) + String(",") + 
+      String(bnowo.getGyroZ()) + String(",") + 
       
       // Append the Orientation.
-      String(bnowo.getOrientationX()) + "," + 
-      String(bnowo.getOrientationY()) + "," + 
-      String(bnowo.getOrientationZ()) + "," + 
+      String(bnowo.getOrientationX()) + String(",") + 
+      String(bnowo.getOrientationY()) + String(",") + 
+      String(bnowo.getOrientationZ()) + String(",") + 
       
       // Append the 3d coordinates.
-      String(miners.getLatitude()) + "," +
-      String(miners.getLongitude()) + "," + 
+      String(miners.getLatitude()) + String(",") +
+      String(miners.getLongitude()) + String(",") + 
       String(miners.getAltitude()));
 }
 
@@ -162,9 +171,7 @@ void stateSwitcher() {
 
 // this is where the liftoff code goes
 void liftoff(){
-  
-
-
+    
 }
 
 // this is where the burst code goes
@@ -172,8 +179,8 @@ void burst() {
     
 }
 
-// this is where the decent code goes
-void decent(){
+// this is where the descent code goes
+void descent(){
     
 }
 
@@ -182,20 +189,70 @@ void landed() {
     
 }
 
+// Returns 1 if the point is above the channel and negative one if it is below. Otherwise it returns zero
+int phaseControl(){
+    // define constants
+    int a = 100;
+    float p = 1.0;
+    float d = 15;
+
+    float x = bnowo.getOrientationX();
+    float y = bnowo.getGyroX();
+
+    float upper_bound = 0;
+
+    // Calculate the angle of the upper bounds
+    if(x < a || x > -a) {
+        upper_bound = -(p * x) + d;
+    }
+    // Calculate the left line of the upper bounds
+    if(x <= -a) {
+        upper_bound = (p * a) + d;
+    }
+    // Calculate the right line of the upper bounds
+    if(x >= a){
+        upper_bound = -(p * a) + d;
+    }
+    
+    // Return 1 if the point is "above bounds"
+    if(y <= upper_bound){
+        return 1;
+    }
+    
+    float lower_bound = 0;
+
+    // Calculate the angle of the lower bounds
+    if(x < a || x > -a){
+        lower_bound = -(p * x) - d;
+    }
+
+    // Calculate the left line of the lower bounds
+    if(x <= -a){
+        lower_bound = (p * a) - d;
+    }
+    // Calculate the right line of the lower bounds
+    if(x >= a){
+        lower_bound = -(p * a) - d;
+    }
+    
+    // Return negative 1 if the point is below the bounds
+    if (y <= lower_bound){
+        return -1;
+    }
+    
+    // If this point is reached then none of the checks passed and the point is inside the bounds
+    return 0;
+}
 
 // this is where the stabilization code goes
 void stabilize() {
-  // define constants (slope )
-  float k_p = 1.0;
-  float k_v = 1.0;
-  float deadzone = 15;
-
+  
   // phase control
-  if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= -deadzone) {
+  if (phaseControl() == 1) {
     // turn on clockwise and off counter clockwise
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
-  } else if (k_p * bnowo.getOrientationX() + k_v * bnowo.getGyroX() <= deadzone) {
+  } else if (phaseControl() == -1) {
     // turn on counter clockwise and off clockwise
     digitalWrite(cclockwise, HIGH);
     digitalWrite(clockwise, LOW);
@@ -204,6 +261,7 @@ void stabilize() {
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
   }
+<<<<<<< HEAD
 }
 
 float velocity() {
@@ -222,3 +280,6 @@ float velocity() {
   }
   return velocityEND; 
 }
+=======
+}
+>>>>>>> e3ea5d182c6239568042070ac308c5f6eef63420
