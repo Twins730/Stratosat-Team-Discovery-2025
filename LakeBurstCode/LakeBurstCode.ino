@@ -158,6 +158,52 @@ void landed() {
     
 }
 
+// Returns 1 if the point is above the channel and negative one if it is below. Otherwise it returns zero
+int phaseControl(float p, int a, int d, int b, float x, float y){
+    float upper_bound = 0;
+
+    // Calculate the angle of the upper bounds
+    if(x < a || x > -a) {
+        upper_bound = -(p * x) + d;
+    }
+    // Calculate the left line of the upper bounds
+    if(x <= -a) {
+        upper_bound = (p * a) + d;
+    }
+    // Calculate the right line of the upper bounds
+    if(x >= a){
+        upper_bound = -(p * a) + d;
+    }
+    
+    // Return 1 if the point is "above bounds"
+    if(y <= upper_bound){
+        return 1;
+    }
+    
+    float lower_bound = 0;
+
+    // Calculate the angle of the lower bounds
+    if(x < a || x > -a){
+        lower_bound = -(p * x) - d;
+    }
+
+    // Calculate the left line of the lower bounds
+    if(x <= -a){
+        lower_bound = (p * a) - d;
+    }
+    // Calculate the right line of the lower bounds
+    if(x >= a){
+        lower_bound = -(p * a) - d;
+    }
+    
+    // Return negative 1 if the point is below the bounds
+    if (y <= lower_bound){
+        return -1;
+    }
+    
+    // If this point is reached then none of the checks passed and the point is inside the bounds
+    return 0;
+}
 
 // this is where the stabilization code goes
 void stabilize() {
