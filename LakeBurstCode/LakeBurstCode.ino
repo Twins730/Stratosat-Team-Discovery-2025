@@ -162,6 +162,9 @@ void stateSwitcher() {
   ... continue for all states
   */
 
+  // Get the current velocity
+  int currentVelocity = velocity();
+ 
   // info from mrr slide
   // Check for liftoff altidude (if over 20m in the air is should be high enough to count)
   if(lastAltitude > 20 && !acending_state){
@@ -187,6 +190,12 @@ void stateSwitcher() {
   if(lastAltitude < (peak_height - 100) && !decent_state){
     state = DESCENT;
     decent_state = true;
+  }
+
+  // Check if the payloads velocity is very close to zero
+  // Note: this accounts for inacuratcies.
+  if(currentVelocity < 0.01 && falling_state && decent_state){
+    state = LANDED
   }
 }
 
