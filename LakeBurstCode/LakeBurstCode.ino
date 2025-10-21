@@ -195,7 +195,7 @@ void stateSwitcher() {
   // Check if the payloads velocity is very close to zero
   // Note: this accounts for inacuratcies.
   if(currentVelocity < 0.01 && falling_state && decent_state){
-    state = LANDED
+    state = LANDED;
   }
 }
 
