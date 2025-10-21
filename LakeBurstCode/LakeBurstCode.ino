@@ -161,6 +161,33 @@ void stateSwitcher() {
 
   ... continue for all states
   */
+
+  // info from mrr slide
+  // Check for liftoff altidude (if over 20m in the air is should be high enough to count)
+  if(lastAltitude > 20 && !acending_state){
+    state = LIFTOFF;
+    acending_state = true;
+  }
+
+  // Check for the stabilize height
+  // note: lastAltitude is mesured in meters.
+  if(lastAltitude >= (20 * 1000) && !stabilizing_state){
+    state = STABILIZE;
+    stabilizing_state = true;
+  }
+
+
+  // Check if the baloon is decending
+  if(peak_height > lastAltitude && !falling_state) {
+    state = BURST;
+    falling_state = true;
+  }
+
+  // Check if the payload continued to fall
+  if(lastAltitude < (peak_height - 100) && !decent_state){
+    state = DESCENT;
+    decent_state = true;
+  }
 }
 
 // this is where the liftoff code goes
