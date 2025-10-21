@@ -165,6 +165,9 @@ void stateSwitcher() {
   ... continue for all states
   */
 
+  // Get the current velocity
+  int currentVelocity = velocity();
+ 
   // info from mrr slide
   
 
@@ -190,6 +193,12 @@ void stateSwitcher() {
     state = DESCENT;
   }
 
+
+  // Check if the payloads velocity is very close to zero
+  // Note: this accounts for inacuratcies.
+  if(currentVelocity < 0.01 && falling_state && decent_state){
+    state = LANDED;
+  }
 }
 
 // this is where the liftoff code goes
