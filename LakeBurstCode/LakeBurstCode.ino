@@ -94,9 +94,6 @@ void loop() {
   }
 
   // Start of LED_Blink 
- 
-
-
   if(millis() - lasttime <= 50){    // Light will be ON for 50 milisec
     digitalWrite(LED,HIGH); 
   }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 950 milisec
@@ -105,7 +102,6 @@ void loop() {
     lasttime = millis(); // Process with code
   }
 
-  digitalWrite(status, LOW);
   stateSwitcher();
 
 }
@@ -176,29 +172,37 @@ void stateSwitcher() {
     state = LIFTOFF;
   }
 
-  // Check for the stabilize height
-  // note: lastAltitude is mesured in meters.
-  else if(lastAltitude >= (20 * 1000) && state != STABILIZE){
-    state = STABILIZE;
-  }
+  if (state == LIFTOFF) {
+    // Check for the stabilize height
+    // note: lastAltitude is mesured in meters.
+    if (lastAltitude >= (20 * 1000)) {
+      state = STABILIZE;
+    }
+  } 
 
-
-  // Check if the baloon is descending
-  else if(peakAltitude > lastAltitude && state != BURST) {
-    state = BURST;
+  else if (state == STABILIZE) {
+    if (peakAltitude > lastAltitude) {
+      state = BURST;
+    }
   }
 
   // Check if the payload continued to fall
-  else if(lastAltitude < (peakAltitude - 100) && state != DESCENT){
-    state = DESCENT;
+  else if(state == BURST) {
+    if (lastAltitude < (peakAltitude - 100)) {
+      state = DESCENT;
+    }
+  }
+
+  else if (state == DESCENT) {
+    if(currentVelocity < 0.01) {
+      // Check if the payloads velocity is very close to zero
+      // Note: this accounts for innacuracies.
+      state = LANDED;
+    }
   }
 
 
-  // Check if the payloads velocity is very close to zero
-  // Note: this accounts for inacuratcies.
-  if(currentVelocity < 0.01 && falling_state && decent_state){
-    state = LANDED;
-  }
+  
 }
 
 // this is where the liftoff code goes
