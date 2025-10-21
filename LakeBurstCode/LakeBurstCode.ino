@@ -12,6 +12,7 @@ const int LED = 21; // LED
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 M9N miners; // create a m9n object pronounced "minors"
+
 int lasttime = millis();
  
 
@@ -32,6 +33,7 @@ States state = LAUNCH;
 
 
 float lastAltitude = 0;
+float peakAltitude = 0;
 int velocityTime = 1;
 float velocityEND = 0; 
 
@@ -155,6 +157,7 @@ String dataString(int a) {
 }
 
 void stateSwitcher() {
+  
   /* if( check for liftoff) {
     state = 1;
   }
@@ -163,31 +166,30 @@ void stateSwitcher() {
   */
 
   // info from mrr slide
+  
+
   // Check for liftoff altidude (if over 20m in the air is should be high enough to count)
-  if(lastAltitude > 20 && !acending_state){
+  if(lastAltitude > 20 && state != LIFTOFF){
     state = LIFTOFF;
-    acending_state = true;
   }
 
   // Check for the stabilize height
   // note: lastAltitude is mesured in meters.
-  if(lastAltitude >= (20 * 1000) && !stabilizing_state){
+  else if(lastAltitude >= (20 * 1000) && state != STABILIZE){
     state = STABILIZE;
-    stabilizing_state = true;
   }
 
 
-  // Check if the baloon is decending
-  if(peak_height > lastAltitude && !falling_state) {
+  // Check if the baloon is descending
+  else if(peakAltitude > lastAltitude && state != BURST) {
     state = BURST;
-    falling_state = true;
   }
 
   // Check if the payload continued to fall
-  if(lastAltitude < (peak_height - 100) && !decent_state){
+  else if(lastAltitude < (peakAltitude - 100) && state != DESCENT){
     state = DESCENT;
-    decent_state = true;
   }
+
 }
 
 // this is where the liftoff code goes
@@ -291,12 +293,19 @@ float velocity() {
     float DTime = millis() - velocityTime;
     DTime /= 1000;
 
+    if (bmeup.getAltitude() >= lastAltitude) {
+      peakAltitude = lastAltitude;
+    }
+
     lastAltitude = bmeup.getAltitude();
+    
     velocityTime = millis();
-    velocityEND = (float)DAltitude / DTime;
 
     //  Return vertical velocity in m/s
+    velocityEND = (float)DAltitude / DTime;
+
     
   }
   return velocityEND; 
+  
 }
