@@ -45,6 +45,7 @@ int velocityTime = 1;
 float velocityEND = 0; 
 
 void setup() {
+
  // Lights  
   pinMode(LED,OUTPUT);
   pinMode(clockwise,OUTPUT);
@@ -56,6 +57,8 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
 
+  
+  Serial.println("Start blinking your pins twin");
   // Making Light THROB 
   digitalWrite(clockwise,HIGH);
   delay(500);
@@ -67,13 +70,14 @@ void setup() {
   digitalWrite(cclockwise, LOW); 
   
 
+  Serial.println("Start starting up yo sensors twin");
   // Start the sensors
   Serial1.println("Startup");
 
 
-  bnowo.init();
-  bmeup.init();
-  miners.init();
+  Serial.println(bnowo.init());
+  //Serial.println(bmeup.init());
+  Serial.println(miners.init());
   
 
   
@@ -92,7 +96,7 @@ void loop() {
   ii++;
 
   // print csv string for assembling the data to log. Needs a loop number.
-  Serial1.println(dataString(ii));
+  printData();
 
   // now for the actual code based on state.
   switch (state) {
@@ -130,7 +134,7 @@ void loop() {
     lasttime = millis(); // Process with code
   }
 
-  stateSwitcher();
+  //stateSwitcher();
 
 }
 
@@ -138,9 +142,10 @@ void loop() {
 void printData() {
   // prefetch calls the current data
   bnowo.prefetchData();
-  bmeup.prefetchData();
+  //bmeup.prefetchData();
   miners.prefetchData();
 
+  
   // return all data as a single string
   Serial1.print(String("LAKEBURST") + String(","));
   
@@ -152,11 +157,13 @@ void printData() {
   Serial1.print(String(ina260.readBusVoltage()) + String(","));
   Serial1.print(String(ina260.readPower()) + String(","));
 
+  /*
   // Append "bmeup" statistics
   Serial1.print(String(bmeup.getPressure()) + String(","));
   Serial1.print(String(bmeup.getAltitude()) + String(","));
   Serial1.print(String(bmeup.getTemperature()) + String(","));
   Serial1.print(String(bmeup.getHumidity()) + String(","));
+  */
   
   // Append Acceleration.
   Serial1.print(String(bnowo.getAccelerationX()) + String(",")); 
@@ -180,7 +187,7 @@ void printData() {
 
   Serial1.println("");
 }
-
+/*
 String dataString(int a) {
   // prefetch calls the current data
   bnowo.prefetchData();
@@ -230,6 +237,7 @@ String dataString(int a) {
       String(miners.getLongitude()) + String(",") + 
       String(miners.getAltitude()));
 }
+*/
 
 void stateSwitcher() {
   
