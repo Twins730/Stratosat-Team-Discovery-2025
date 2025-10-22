@@ -1,4 +1,6 @@
 // code for stratosat LakeBurst
+#include <Adafruit_INA260.h>
+
 #include <SHC_BNO055.h>
 #include <SHC_BME280.h>
 #include <SHC_M9N.h>
@@ -8,6 +10,10 @@ const int status = 21; // status light pin number
 const int clockwise = 22; // clockwise pin number
 const int cclockwise = 23; // counter clockwise pin number
 const int LED = 21; // LED 
+
+// See https://learn.adafruit.com/adafruit-ina260-current-voltage-power-sensor-breakout/arduino
+// Note: This isnt in the Luma libraries
+Adafruit_INA260 ina260 = Adafruit_INA260();
 
 BNO055 bnowo; // create bno object pronounced "bean-owo"
 SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
@@ -146,6 +152,11 @@ String dataString(int a) {
       
       // Append the current mechine state.
       String(state) + String(String(",")) + 
+
+      // Power sensor
+      String(ina260.readCurrent()) + String(",") +
+      String(ina260.readBusVoltage()) + String(",") +
+      String(ina260.readPower()) + String(",") +
       
       // Append "bmeup" statistics
       String(bmeup.getPressure()) + String(",") + 
