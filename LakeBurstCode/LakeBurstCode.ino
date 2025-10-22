@@ -14,6 +14,7 @@ SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed 
 M9N miners; // create a m9n object pronounced "minors"
 
 int lasttime = millis();
+int ii = 1; 
  
 
 // get startup time
@@ -38,33 +39,54 @@ int velocityTime = 1;
 float velocityEND = 0; 
 
 void setup() {
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  Serial1.begin(9600);
-
-  // Start the sensors
-  bnowo.init();
-  bmeup.init();
-  miners.init();
-
-  // done
-  Serial.println("initialization done.");
-  
-  // Lights  
+ // Lights  
   pinMode(LED,OUTPUT);
   pinMode(clockwise,OUTPUT);
   pinMode(cclockwise,OUTPUT);
   pinMode(status,OUTPUT);
 
 
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  Serial1.begin(9600);
+
+  // Making Light THROB 
+  digitalWrite(clockwise,HIGH);
+  delay(500);
+  digitalWrite(clockwise, LOW); 
+
+
+  digitalWrite(cclockwise, HIGH);
+  delay(500); 
+  digitalWrite(cclockwise, LOW); 
+  
+
+  // Start the sensors
+  Serial1.println("Startup");
+
+
+  bnowo.init();
+  bmeup.init();
+  miners.init();
+  
+
+  
+
+  // done
+  Serial.println("initialization done.");
+  
+  
+ 
+  
+
 }
 
 void loop() {
   // iterate loop by one each time
-  i++;
+  ii++;
 
   // print csv string for assembling the data to log. Needs a loop number.
-  Serial1.println(dataString(i));
+  Serial1.println(dataString(ii));
 
   // now for the actual code based on state.
   switch (state) {
