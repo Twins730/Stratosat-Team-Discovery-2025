@@ -135,6 +135,52 @@ void loop() {
 }
 
 
+void printData() {
+  // prefetch calls the current data
+  bnowo.prefetchData();
+  bmeup.prefetchData();
+  miners.prefetchData();
+
+  // return all data as a single string
+  Serial1.print(String("LAKEBURST") + String(","));
+  
+  // Append the current mechine state.
+  Serial1.print(String(state) + String(","));
+  
+  // Power sensor
+  Serial1.print(String(ina260.readCurrent()) + String(","));
+  Serial1.print(String(ina260.readBusVoltage()) + String(","));
+  Serial1.print(String(ina260.readPower()) + String(","));
+
+  // Append "bmeup" statistics
+  Serial1.print(String(bmeup.getPressure()) + String(","));
+  Serial1.print(String(bmeup.getAltitude()) + String(","));
+  Serial1.print(String(bmeup.getTemperature()) + String(","));
+  Serial1.print(String(bmeup.getHumidity()) + String(","));
+  
+  // Append Acceleration.
+  Serial1.print(String(bnowo.getAccelerationX()) + String(",")); 
+  Serial1.print(String(bnowo.getAccelerationY()) + String(","));
+  Serial1.print(String(bnowo.getAccelerationZ()) + String(","));
+  
+  // Append Gyro Axis.
+  Serial1.print(String(bnowo.getGyroX()) + String(","));
+  Serial1.print(String(bnowo.getGyroY()) + String(","));
+  Serial1.print(String(bnowo.getGyroZ()) + String(","));
+  
+  // Append the Orientation.
+  Serial1.print(String(bnowo.getOrientationX()) + String(",")); 
+  Serial1.print(String(bnowo.getOrientationY()) + String(",")); 
+  Serial1.print(String(bnowo.getOrientationZ()) + String(","));
+  
+  // Append the 3d coordinates.
+  Serial1.print(String(miners.getLatitude()) + String(","));
+  Serial1.print(String(miners.getLongitude()) + String(","));
+  Serial1.print(String(miners.getAltitude()));
+
+  Serial1.println("");
+}
+
 String dataString(int a) {
   // prefetch calls the current data
   bnowo.prefetchData();
