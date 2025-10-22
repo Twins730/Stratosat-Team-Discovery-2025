@@ -72,12 +72,13 @@ void setup() {
 
   Serial.println("Start starting up yo sensors twin");
   // Start the sensors
-  Serial1.println("Startup");
+  Serial.println("Startup");
 
 
   Serial.println(bnowo.init());
   //Serial.println(bmeup.init());
   Serial.println(miners.init());
+  ina260.begin();
   
 
   
@@ -145,12 +146,16 @@ void printData() {
   //bmeup.prefetchData();
   miners.prefetchData();
 
+  Serial.println("Huh");
+
   
   // return all data as a single string
   Serial1.print(String("LAKEBURST") + String(","));
+  Serial.println("huhx2");
   
   // Append the current mechine state.
   Serial1.print(String(state) + String(","));
+  Serial.println("Huhx3");
   
   // Power sensor
   Serial1.print(String(ina260.readCurrent()) + String(","));
@@ -187,57 +192,6 @@ void printData() {
 
   Serial1.println("");
 }
-/*
-String dataString(int a) {
-  // prefetch calls the current data
-  bnowo.prefetchData();
-  bmeup.prefetchData();
-  miners.prefetchData();
-  
-  // return all data as a single string
-  return String(String("LAKEBURST") + String(",") + 
-      // Append timing
-      String(now() - startup) + String(",") + 
-      String(now()) + String(",") + 
-      
-      // Append "a" variable
-      String(a) + String(String(",")) + 
-      
-      // Append the current mechine state.
-      String(state) + String(String(",")) + 
-
-      // Power sensor
-      String(ina260.readCurrent()) + String(",") +
-      String(ina260.readBusVoltage()) + String(",") +
-      String(ina260.readPower()) + String(",") +
-      
-      // Append "bmeup" statistics
-      String(bmeup.getPressure()) + String(",") + 
-      String(bmeup.getAltitude()) + String(",") +
-      String(bmeup.getTemperature()) + String(",") + 
-      String(bmeup.getHumidity()) + String(",") + 
-      
-      // Append Acceleration.
-      String(bnowo.getAccelerationX()) + String(",") + 
-      String(bnowo.getAccelerationY()) + String(",") + 
-      String(bnowo.getAccelerationZ()) + String(",") + 
-      
-      // Append Gyro Axis.
-      String(bnowo.getGyroX()) + String(",") + 
-      String(bnowo.getGyroY()) + String(",") + 
-      String(bnowo.getGyroZ()) + String(",") + 
-      
-      // Append the Orientation.
-      String(bnowo.getOrientationX()) + String(",") + 
-      String(bnowo.getOrientationY()) + String(",") + 
-      String(bnowo.getOrientationZ()) + String(",") + 
-      
-      // Append the 3d coordinates.
-      String(miners.getLatitude()) + String(",") +
-      String(miners.getLongitude()) + String(",") + 
-      String(miners.getAltitude()));
-}
-*/
 
 void stateSwitcher() {
   
