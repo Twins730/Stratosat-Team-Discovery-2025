@@ -37,7 +37,7 @@ enum States {
   LANDED
 };
 
-States state = LAUNCH;
+States state = STABILIZE;
 
 
 float lastAltitude = 0;
@@ -60,7 +60,6 @@ void setup() {
   Serial1.begin(9600);
 
   
-  Serial.println("Start blinking your pins twin");
   // Making Light THROB 
   digitalWrite(clockwise,HIGH);
   delay(500);
@@ -72,7 +71,6 @@ void setup() {
   digitalWrite(cclockwise, LOW); 
   
 
-  Serial.println("Start starting up yo sensors twin");
   // Start the sensors
   Serial.println("Startup");
 
@@ -97,7 +95,7 @@ void loop() {
   ii++;
 
   // print csv string for assembling the data to log. Needs a loop number.
-  printData();
+  // printData();
 
   // now for the actual code based on state.
   switch (state) {
@@ -146,16 +144,13 @@ void printData() {
   //bmeup.prefetchData();
   miners.prefetchData();
 
-  Serial.println("Huh");
 
   
   // return all data as a single string
   Serial1.print(String("LAKEBURST") + String(","));
-  Serial.println("huhx2");
   
   // Append the current mechine state.
   Serial1.print(String(state) + String(","));
-  Serial.println("Huhx3");
   
   // Power sensor
   Serial1.print(String(ina260.readCurrent()) + String(","));
@@ -267,74 +262,69 @@ void landed() {
 int phaseControl(){
     // define constants
     int a = 100;
-    float p = 2;
-    float d = 0.5 - bnowo.getGyroZ();
+    float p = 1.5;
+    float d = 15;
 
-    float x = bnowo.getOrientationZ();
+    bnowo.prefetchData();
+    float x = bnowo.getOrientationX();
     float y = bnowo.getGyroZ();
 
-    float upper_bound = 0;
+    Serial.println(String(x) + String(y));
 
-    // Calculate the angle of the upper bounds
-    if(x < a || x > -a) {
-        upper_bound = -(p * x) + d;
+    if ((x <= a+180) && (x >= -a+180)) {
+      if ((p*(x-180) + y) >= d) {
+        return(1);
+      }
+      else if ((p*(x-180) + y <= -d)) {
+        return(-1);
+      }
+      else {return(0);}
     }
-    // Calculate the left line of the upper bounds
-    if(x <= -a) {
-        upper_bound = (p * a) + d;
-    }
-    // Calculate the right line of the upper bounds
-    if(x >= a){
-        upper_bound = -(p * a) + d;
-    }
+    else if ((x<=-a+180)) {
+      if ((y >= p*a + d)) {
+        return(1);
+      } else if ((y <= p*a+180 - d)) {
+        return(-1);
+      }
+      else {return(0);}
 
-    // Return 1 if the point is "above bounds"
-    if(y <= upper_bound){
-        return 1;
     }
-
-    float lower_bound = 0;
-
-    // Calculate the angle of the lower bounds
-    if(x < a || x > -a){
-        lower_bound = -(p * x) - d;
+    else if ((x>=a+180)) {
+      if ((y >= (-p * a+180 + d))) {
+        return(1);
+      } else if ((y <= (-p * a+180 - d))) {
+        return(-1);
+      }
+      else {return(0);}
     }
-
-    // Calculate the left line of the lower bounds
-    if(x <= -a){
-        lower_bound = (p * a) - d;
-    }
-    // Calculate the right line of the lower bounds
-    if(x >= a){
-        lower_bound = -(p * a) - d;
-    }
-
-    // Return negative 1 if the point is below the bounds
-    if (y <= lower_bound){
-        return -1;
-    }
-
-    // If this point is reached then none of the checks passed and the point is inside the bounds
-    return 0;
+    else {return(0);}
 }
 
 // this is where the stabilization code goes
 void stabilize() {
-  
+  Serial.println("Stabilize");
+  int temp = phaseControl();
+  Serial.println(temp);
   // phase control
-  if (phaseControl() == 1) {
+  if (temp == 1) {
     // turn on clockwise and off counter clockwise
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
-  } else if (phaseControl() == -1) {
-    // turn off all
-    digitalWrite(clockwise, LOW);
-    digitalWrite(cclockwise, LOW);
-  } else {
+    Serial1.println("clockwise");
+  } else if (temp == -1) {
     // turn on counter clockwise and off clockwise
     digitalWrite(cclockwise, HIGH);
     digitalWrite(clockwise, LOW);
+    Serial1.println("cclockwise");
+  } else {
+    // turn off all
+    digitalWrite(clockwise, LOW);
+    digitalWrite(cclockwise, LOW);
+    Serial1.println("nothing");
   }
+
+  digitalWrite(clockwise, LOW);
+  digitalWrite(cclockwise, LOW);
 }
 
 float velocity() {
