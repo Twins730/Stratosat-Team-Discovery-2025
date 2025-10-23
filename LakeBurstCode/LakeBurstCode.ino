@@ -267,11 +267,11 @@ void landed() {
 int phaseControl(){
     // define constants
     int a = 100;
-    float p = 1.0;
-    float d = 15;
+    float p = 2;
+    float d = 0.5 - bnowo.getGyroZ();
 
-    float x = bnowo.getOrientationX();
-    float y = bnowo.getGyroX();
+    float x = bnowo.getOrientationZ();
+    float y = bnowo.getGyroZ();
 
     float upper_bound = 0;
 
@@ -287,12 +287,12 @@ int phaseControl(){
     if(x >= a){
         upper_bound = -(p * a) + d;
     }
-    
+
     // Return 1 if the point is "above bounds"
     if(y <= upper_bound){
         return 1;
     }
-    
+
     float lower_bound = 0;
 
     // Calculate the angle of the lower bounds
@@ -308,12 +308,12 @@ int phaseControl(){
     if(x >= a){
         lower_bound = -(p * a) - d;
     }
-    
+
     // Return negative 1 if the point is below the bounds
     if (y <= lower_bound){
         return -1;
     }
-    
+
     // If this point is reached then none of the checks passed and the point is inside the bounds
     return 0;
 }
@@ -327,13 +327,13 @@ void stabilize() {
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
   } else if (phaseControl() == -1) {
-    // turn on counter clockwise and off clockwise
-    digitalWrite(cclockwise, HIGH);
-    digitalWrite(clockwise, LOW);
-  } else {
     // turn off all
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
+  } else {
+    // turn on counter clockwise and off clockwise
+    digitalWrite(cclockwise, HIGH);
+    digitalWrite(clockwise, LOW);
   }
 }
 
