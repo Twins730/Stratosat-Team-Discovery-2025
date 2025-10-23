@@ -340,15 +340,15 @@ void stabilize() {
 float velocity() {
  
   if (velocityTime >= 1000) {
-    float DAltitude = bmeup.getAltitude() - lastAltitude;
+    float DAltitude = miners.getAltitude() - lastAltitude;
     float DTime = millis() - velocityTime;
     DTime /= 1000;
 
-    if (bmeup.getAltitude() >= lastAltitude) {
+    if (miners.getAltitude() >= lastAltitude) {
       peakAltitude = lastAltitude;
     }
 
-    lastAltitude = bmeup.getAltitude();
+    lastAltitude = miners.getAltitude();
     
     velocityTime = millis();
 
