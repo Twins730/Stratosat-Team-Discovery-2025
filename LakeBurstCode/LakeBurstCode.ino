@@ -20,12 +20,12 @@ M9N miners; // create a m9n object pronounced "minors"
 Bme280TwoWire bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 
 
-int lasttime = millis();
+int lasttime = 0;
 int ii = 1; 
  
 
 // get startup time
-int startup = miners.getSecond();
+int startup = 1;
 int i = 0;
 
 enum States {
@@ -62,12 +62,12 @@ void setup() {
   
   // Making Light THROB 
   digitalWrite(clockwise,HIGH);
-  delay(500);
+  delay(50);
   digitalWrite(clockwise, LOW); 
 
 
   digitalWrite(cclockwise, HIGH);
-  delay(500); 
+  delay(50); 
   digitalWrite(cclockwise, LOW); 
   
 
@@ -94,14 +94,33 @@ void loop() {
   // iterate loop by one each time
   ii++;
 
+  // commenting out for testing the stabilization
+  // Start of LED_Blink 
+  
+  Serial.println("Start blinkin yo LEDs twin");
+  if(millis() - lasttime <= 200){    // Light will be ON for 500 milisec
+    digitalWrite(LED,HIGH); 
+  }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 500 milisec
+    digitalWrite(LED, LOW); 
+  }else{
+    lasttime = millis(); // Process with code
+  }
+  Serial.println(millis());
+  Serial.println(lasttime);
+  
+  
+  // prefetch calls the current data
+  bnowo.prefetchData();
+  //miners.prefetchData();
+  
+
   // print csv string for assembling the data to log. Needs a loop number.
-  // printData();
+  printData();
 
   // now for the actual code based on state.
   switch (state) {
     case LAUNCH:
       // launch code. should just turn on status lights.
-      digitalWrite(status, HIGH);
       break;
     case LIFTOFF:
       // liftoff code
@@ -123,32 +142,19 @@ void loop() {
       landed();
       break;
   }
+  
 
-  // Start of LED_Blink 
-  if(millis() - lasttime <= 50){    // Light will be ON for 50 milisec
-    digitalWrite(LED,HIGH); 
-  }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 950 milisec
-    digitalWrite(LED, LOW); 
-  }else{
-    lasttime = millis(); // Process with code
-  }
-
-  //stateSwitcher();
+  // stateSwitcher();
 
 }
 
 
 void printData() {
-  // prefetch calls the current data
-  bnowo.prefetchData();
-  //bmeup.prefetchData();
-  miners.prefetchData();
-
-
-  
   // return all data as a single string
   Serial1.print(String("LAKEBURST") + String(","));
   
+  Serial1.print(String(millis() + String(",")));
+
   // Append the current mechine state.
   Serial1.print(String(state) + String(","));
   
@@ -177,12 +183,15 @@ void printData() {
   Serial1.print(String(bnowo.getOrientationY()) + String(",")); 
   Serial1.print(String(bnowo.getOrientationZ()) + String(","));
   
+  /*
   // Append the 3d coordinates.
   Serial1.print(String(miners.getLatitude()) + String(","));
   Serial1.print(String(miners.getLongitude()) + String(","));
   Serial1.print(String(miners.getAltitude()));
+  */
 
   Serial1.println("");
+  Serial.println("write done");
 }
 
 void stateSwitcher() {
@@ -262,38 +271,37 @@ void landed() {
 int phaseControl(){
     // define constants
     int a = 100;
-    float p = 1.5;
+    float p = .7;
     float d = 15;
 
-    bnowo.prefetchData();
     float x = bnowo.getOrientationX();
     float y = bnowo.getGyroZ();
 
-    Serial.println(String(x) + String(y));
+    Serial.println(String(x) + String(",") + String(y));
 
     if ((x <= a+180) && (x >= -a+180)) {
       if ((p*(x-180) + y) >= d) {
-        return(1);
+        return(-1);
       }
       else if ((p*(x-180) + y <= -d)) {
-        return(-1);
+        return(1);
       }
       else {return(0);}
     }
     else if ((x<=-a+180)) {
       if ((y >= p*a + d)) {
-        return(1);
-      } else if ((y <= p*a+180 - d)) {
         return(-1);
+      } else if ((y <= p*a - d)) {
+        return(1);
       }
       else {return(0);}
 
     }
     else if ((x>=a+180)) {
-      if ((y >= (-p * a+180 + d))) {
-        return(1);
-      } else if ((y <= (-p * a+180 - d))) {
+      if ((y >= (-p * a + d))) {
         return(-1);
+      } else if ((y <= (-p * a - d))) {
+        return(1);
       }
       else {return(0);}
     }
@@ -310,21 +318,18 @@ void stabilize() {
     // turn on clockwise and off counter clockwise
     digitalWrite(clockwise, HIGH);
     digitalWrite(cclockwise, LOW);
-    Serial1.println("clockwise");
+    Serial.println("clockwise");
   } else if (temp == -1) {
     // turn on counter clockwise and off clockwise
     digitalWrite(cclockwise, HIGH);
     digitalWrite(clockwise, LOW);
-    Serial1.println("cclockwise");
+    Serial.println("cclockwise");
+
   } else {
     // turn off all
     digitalWrite(clockwise, LOW);
     digitalWrite(cclockwise, LOW);
-    Serial1.println("nothing");
   }
-
-  digitalWrite(clockwise, LOW);
-  digitalWrite(cclockwise, LOW);
 }
 
 float velocity() {
