@@ -2,9 +2,10 @@
 #include <Adafruit_INA260.h>
 
 #include <SHC_BNO055.h>
-#include <SHC_BME280.h>
+#include <Bme280.h>
 #include <SHC_M9N.h>
 #include <TimeLib.h>
+
 
 const int status = 21; // status light pin number
 const int clockwise = 22; // clockwise pin number
@@ -14,10 +15,10 @@ const int LED = 21; // LED
 // See https://learn.adafruit.com/adafruit-ina260-current-voltage-power-sensor-breakout/arduino
 // Note: This isnt in the Luma libraries
 Adafruit_INA260 ina260 = Adafruit_INA260();
-
 BNO055 bnowo; // create bno object pronounced "bean-owo"
-SHC_BME280 bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 M9N miners; // create a m9n object pronounced "minors"
+Bme280TwoWire bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
+
 
 int lasttime = millis();
 int ii = 1; 
@@ -45,6 +46,7 @@ int velocityTime = 1;
 float velocityEND = 0; 
 
 void setup() {
+  Wire.begin();
 
  // Lights  
   pinMode(LED,OUTPUT);
@@ -76,12 +78,10 @@ void setup() {
 
 
   Serial.println(bnowo.init());
-  //Serial.println(bmeup.init());
   Serial.println(miners.init());
   ina260.begin();
-  
-
-  
+  bmeup.begin(Bme280TwoWireAddress::Primary);
+  bmeup.setSettings(Bme280Settings::indoor());
 
   // done
   Serial.println("initialization done.");
@@ -162,13 +162,10 @@ void printData() {
   Serial1.print(String(ina260.readBusVoltage()) + String(","));
   Serial1.print(String(ina260.readPower()) + String(","));
 
-  /*
   // Append "bmeup" statistics
-  Serial1.print(String(bmeup.getPressure()) + String(","));
-  Serial1.print(String(bmeup.getAltitude()) + String(","));
+  Serial1.print(String(bmeup.getPressure() / 100.0) + String(","));
   Serial1.print(String(bmeup.getTemperature()) + String(","));
   Serial1.print(String(bmeup.getHumidity()) + String(","));
-  */
   
   // Append Acceleration.
   Serial1.print(String(bnowo.getAccelerationX()) + String(",")); 
