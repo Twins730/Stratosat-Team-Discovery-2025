@@ -34,7 +34,6 @@ enum States {
   LAUNCH,
   LIFTOFF,
   STABILIZE,
-  BURST,
   DESCENT,
   LANDED
 };
@@ -136,10 +135,6 @@ void loop() {
       // stablization code
       stabilize();
       break;
-    case BURST:
-      // burst code
-      burst();
-      break;
     case DESCENT:
       // descent code
       descent();
@@ -151,7 +146,7 @@ void loop() {
   }
   
 
-  // stateSwitcher();
+  stateSwitcher();
 
 }
 
@@ -210,15 +205,17 @@ void stateSwitcher() {
   ... continue for all states
   */
 
+  
+  lastAltitude = altitude();
+
   // Get the current velocity
   currentVelocity = velocity();
  
   // info from mrr slide
-  lastAltitude = altitude();
 
   // Check for liftoff altidude (if over 20m in the air is should be high enough to count)
   if (state == LAUNCH){
-    if (lastAltitude >= 20){
+    if (lastAltitude >= 500){
       state = LIFTOFF;
     }
   }
@@ -232,14 +229,7 @@ void stateSwitcher() {
   } 
 
   else if (state == STABILIZE) {
-    if (peakAltitude > lastAltitude) {
-      state = BURST;
-    }
-  }
-
-  // Check if the payload continued to fall
-  else if(state == BURST) {
-    if (lastAltitude < (peakAltitude - 100)) {
+    if (peakAltitude-200 > lastAltitude) {
       state = DESCENT;
     }
   }
@@ -261,10 +251,6 @@ void liftoff(){
     
 }
 
-// this is where the burst code goes
-void burst() {
-    
-}
 
 // this is where the descent code goes
 void descent(){
