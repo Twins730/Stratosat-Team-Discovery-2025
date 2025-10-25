@@ -3,7 +3,8 @@
 
 #include <SHC_BNO055.h>
 #include <Bme280.h>
-#include <SHC_M9N.h>
+#include <SparkFun_I2C_GPS_Arduino_Library.h> //Use Library Manager or download here: https://github.com/sparkfun/SparkFun_I2C_GPS_Arduino_Library
+#include <TinyGPS++.h>
 #include <TimeLib.h>
 
 
@@ -16,7 +17,8 @@ const int LED = 21; // LED
 // Note: This isnt in the Luma libraries
 Adafruit_INA260 ina260 = Adafruit_INA260();
 BNO055 bnowo; // create bno object pronounced "bean-owo"
-M9N miners; // create a m9n object pronounced "minors"
+I2CGPS geepers;
+TinyGPSPlus gps;
 Bme280TwoWire bmeup; // create bme object pronounced "beamme-up" (ideally suffixed with Scotty)
 
 
@@ -37,13 +39,14 @@ enum States {
   LANDED
 };
 
-States state = STABILIZE;
+States state = LAUNCH;
 
 
 float lastAltitude = 0;
 float peakAltitude = 0;
 int velocityTime = 1;
 float velocityEND = 0; 
+float currentVelocity = 0;
 
 void setup() {
   Wire.begin();
@@ -76,7 +79,7 @@ void setup() {
 
 
   Serial.println(bnowo.init());
-  Serial.println(miners.init());
+  geepers.begin();
   ina260.begin();
   bmeup.begin(Bme280TwoWireAddress::Primary);
   bmeup.setSettings(Bme280Settings::indoor());
@@ -96,8 +99,13 @@ void loop() {
 
   // commenting out for testing the stabilization
   // Start of LED_Blink 
+
+  while (geepers.available()) //available() returns the number of new bytes available from the GPS module
+  {
+    gps.encode(geepers.read()); //Feed the GPS parser
+  }
   
-  Serial.println("Start blinkin yo LEDs twin");
+  
   if(millis() - lasttime <= 200){    // Light will be ON for 500 milisec
     digitalWrite(LED,HIGH); 
   }else if(millis() - lasttime < 1000){   // Light will turn OFF for remainder of 500 milisec
@@ -105,13 +113,12 @@ void loop() {
   }else{
     lasttime = millis(); // Process with code
   }
-  Serial.println(millis());
-  Serial.println(lasttime);
   
   
   // prefetch calls the current data
   bnowo.prefetchData();
-  //miners.prefetchData();
+  
+  Serial.println(altitude());
   
 
   // print csv string for assembling the data to log. Needs a loop number.
@@ -183,12 +190,12 @@ void printData() {
   Serial1.print(String(bnowo.getOrientationY()) + String(",")); 
   Serial1.print(String(bnowo.getOrientationZ()) + String(","));
   
-  /*
-  // Append the 3d coordinates.
-  Serial1.print(String(miners.getLatitude()) + String(","));
-  Serial1.print(String(miners.getLongitude()) + String(","));
-  Serial1.print(String(miners.getAltitude()));
-  */
+  if (gps.altitude.isValid())
+  {
+    Serial1.print(F("Altitude Meters:"));
+    Serial1.print(gps.altitude.meters());
+  }
+  else {Serial1.print(F("ÄLTITUDE_SAD"));}
 
   Serial1.println("");
   Serial.println("write done");
@@ -204,20 +211,22 @@ void stateSwitcher() {
   */
 
   // Get the current velocity
-  int currentVelocity = velocity();
+  currentVelocity = velocity();
  
   // info from mrr slide
-  
+  lastAltitude = altitude();
 
   // Check for liftoff altidude (if over 20m in the air is should be high enough to count)
-  if(lastAltitude > 20 && state != LIFTOFF){
-    state = LIFTOFF;
+  if (state == LAUNCH){
+    if (lastAltitude >= 20){
+      state = LIFTOFF;
+    }
   }
 
   if (state == LIFTOFF) {
     // Check for the stabilize height
     // note: lastAltitude is mesured in meters.
-    if (lastAltitude >= (20 * 1000)) {
+    if (lastAltitude >= (18 * 1000)) {
       state = STABILIZE;
     }
   } 
@@ -236,7 +245,7 @@ void stateSwitcher() {
   }
 
   else if (state == DESCENT) {
-    if(currentVelocity < 0.01) {
+    if(currentVelocity*currentVelocity < 0.1 && lastAltitude <= 100) {
       // Check if the payloads velocity is very close to zero
       // Note: this accounts for innacuracies.
       state = LANDED;
@@ -271,7 +280,7 @@ void landed() {
 int phaseControl(){
     // define constants
     int a = 100;
-    float p = .7;
+    float p = .4;
     float d = 15;
 
     float x = bnowo.getOrientationX();
@@ -333,17 +342,20 @@ void stabilize() {
 }
 
 float velocity() {
- 
+  
+  
+  float alt = altitude();
+  
   if (velocityTime >= 1000) {
-    float DAltitude = miners.getAltitude() - lastAltitude;
+    float DAltitude = alt - lastAltitude;
     float DTime = millis() - velocityTime;
     DTime /= 1000;
 
-    if (miners.getAltitude() >= lastAltitude) {
+    if (alt >= lastAltitude) {
       peakAltitude = lastAltitude;
     }
 
-    lastAltitude = miners.getAltitude();
+    lastAltitude = alt;
     
     velocityTime = millis();
 
@@ -354,4 +366,13 @@ float velocity() {
   }
   return velocityEND; 
   
+}
+
+float altitude() {
+  if (gps.altitude.isValid()) {
+    return (gps.altitude.meters());
+  }
+  else {
+  return (44330.0*(1.0 - pow(((float) bmeup.getPressure() / 100.0) / 1013.25, 0.1903)));
+  }
 }
